@@ -10,11 +10,7 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     const saved = localStorage.getItem('fincast_theme');
-    if (saved) {
-      setDark(saved === 'dark');
-    } else {
-      setDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
+    setDark(saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches);
     setMounted(true);
   }, []);
 
@@ -35,7 +31,6 @@ export function ThemeProvider({ children }) {
 
 export function useTheme() {
   const ctx = useContext(ThemeCtx);
-  // Return safe fallback if used outside provider (shouldn't happen, but prevents null crash)
   if (!ctx) return { dark: false, toggle: () => {}, T: LIGHT, mounted: false };
   return ctx;
 }
