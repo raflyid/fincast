@@ -1,0 +1,38 @@
+-- Jalankan SQL ini di MySQL untuk setup database Fincast
+
+CREATE DATABASE IF NOT EXISTS fincast CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE fincast;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  reset_token VARCHAR(255) DEFAULT NULL,
+  reset_token_expires DATETIME DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  type ENUM('income', 'expense') NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  amount BIGINT NOT NULL,
+  date DATE NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS forecast_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  description VARCHAR(255) NOT NULL,
+  amount BIGINT NOT NULL,
+  month INT NOT NULL,
+  year INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
