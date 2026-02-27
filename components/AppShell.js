@@ -120,15 +120,13 @@ function Shell({ children, onAddClick }) {
                 minHeight: "100dvh",
                 color: T.text,
                 transition: "background 0.2s, color 0.2s",
-                /* Extend background into safe areas on iOS */
-                paddingTop: "env(safe-area-inset-top, 0px)",
             }}
         >
             <style suppressHydrationWarning>{`
         ::placeholder { color: ${T.textMuted} !important; }
         select option { background: ${T.surface}; color: ${T.text}; }
-        /* Cover the safe area on top/bottom with the header/nav bg */
-        body { background: ${T.bg} !important; }
+        html, body { background: ${T.bg} !important; background-color: ${T.bg} !important; }
+        html { --safe-bg: ${T.bg}; }
       `}</style>
 
             {/* TOP HEADER — fixed so it covers status bar area */}
@@ -262,7 +260,7 @@ function Shell({ children, onAddClick }) {
                                 fontSize: 15,
                             }}
                         >
-                            {dark ? "☀️" : "🌙"}
+                            {dark ? "☀️" : "🌚"}
                         </button>
                         <button
                             onClick={onAddClick}

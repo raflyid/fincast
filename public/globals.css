@@ -29,6 +29,20 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 
+/* Dark theme class applied immediately by inline script before React mounts */
+/* This ensures safe areas (notch/home indicator) are dark-colored, not white */
+html.dark-theme,
+html.dark-theme body {
+    background: #111110 !important;
+    background-color: #111110 !important;
+}
+
+/* Override safe area colors via pseudo-elements on html */
+html.dark-theme::before,
+html.dark-theme::after {
+    background: #111110 !important;
+}
+
 ::-webkit-scrollbar {
     width: 4px;
     height: 4px;

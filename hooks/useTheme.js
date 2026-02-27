@@ -15,10 +15,13 @@ export function ThemeProvider({ children }) {
             : window.matchMedia("(prefers-color-scheme: dark)").matches;
         setDark(isDark);
         // Set body/html bg immediately to prevent white flash on Safari
-        document.documentElement.style.background = isDark
-            ? "#111110"
-            : "#F7F6F3";
-        document.body.style.background = isDark ? "#111110" : "#F7F6F3";
+        const bg = isDark ? "#111110" : "#F7F6F3";
+        document.documentElement.style.background = bg;
+        document.documentElement.style.backgroundColor = bg;
+        document.body.style.background = bg;
+        document.body.style.backgroundColor = bg;
+        if (isDark) document.documentElement.classList.add("dark-theme");
+        else document.documentElement.classList.remove("dark-theme");
         setMounted(true);
     }, []);
 
@@ -26,10 +29,13 @@ export function ThemeProvider({ children }) {
         setDark((prev) => {
             const next = !prev;
             localStorage.setItem("fincast_theme", next ? "dark" : "light");
-            document.documentElement.style.background = next
-                ? "#111110"
-                : "#F7F6F3";
-            document.body.style.background = next ? "#111110" : "#F7F6F3";
+            const bg = next ? "#111110" : "#F7F6F3";
+            document.documentElement.style.background = bg;
+            document.documentElement.style.backgroundColor = bg;
+            document.body.style.background = bg;
+            document.body.style.backgroundColor = bg;
+            if (next) document.documentElement.classList.add("dark-theme");
+            else document.documentElement.classList.remove("dark-theme");
             return next;
         });
     };

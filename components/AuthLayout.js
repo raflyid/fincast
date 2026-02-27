@@ -28,7 +28,7 @@ export default function AuthLayout({ children, title, subtitle }) {
         >
             <style suppressHydrationWarning>{`
         ::placeholder { color: ${T.textMuted} !important; }
-        body { background: ${T.bg} !important; }
+        html, body { background: ${T.bg} !important; background-color: ${T.bg} !important; }
         a { color: ${T.accent}; text-decoration: none; }
         a:hover { text-decoration: underline; }
       `}</style>
@@ -120,7 +120,7 @@ export default function AuthLayout({ children, title, subtitle }) {
                             opacity: 0.4,
                         }}
                     >
-                        {dark ? "☀️" : "🌙"}
+                        {dark ? "☀️" : "🌚"}
                     </button>
                 </div>
             </div>

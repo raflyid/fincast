@@ -10,12 +10,10 @@ export default function RootLayout({ children }) {
     return (
         <html lang="id" suppressHydrationWarning>
             <head>
-                {/* viewport-fit=cover is THE key — tells Safari to extend into notch/home bar areas */}
                 <meta
                     name="viewport"
                     content="width=device-width, initial-scale=1, viewport-fit=cover"
                 />
-                {/* theme-color matches app bg so status bar blends in on iOS */}
                 <meta
                     name="theme-color"
                     content="#111110"
@@ -26,11 +24,30 @@ export default function RootLayout({ children }) {
                     content="#F7F6F3"
                     media="(prefers-color-scheme: light)"
                 />
-                {/* Make it installable as PWA-like full screen on iOS */}
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta
                     name="apple-mobile-web-app-status-bar-style"
                     content="black-translucent"
+                />
+                {/* Inline script: set bg color BEFORE React hydrates to prevent white flash */}
+                <script
+                    dangerouslySetInnerHTML={{
+                        __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('fincast_theme');
+              var isDark = theme ? theme === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+              var bg = isDark ? '#111110' : '#F7F6F3';
+              document.documentElement.style.background = bg;
+              document.documentElement.style.backgroundColor = bg;
+              document.body && (document.body.style.background = bg);
+              document.body && (document.body.style.backgroundColor = bg);
+              // Add class so CSS can react immediately before React mounts
+              if (isDark) document.documentElement.classList.add('dark-theme');
+            } catch(e) {}
+          })();
+        `,
+                    }}
                 />
             </head>
             <body suppressHydrationWarning>
