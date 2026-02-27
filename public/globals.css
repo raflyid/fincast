@@ -1,52 +1,142 @@
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700,800&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,600,700,800&display=swap");
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    /* Extend into safe areas — no white edges */
+    background: inherit;
+    height: 100%;
 }
 
 body {
-  font-family: 'Cabinet Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family:
+        "Cabinet Grotesk",
+        -apple-system,
+        BlinkMacSystemFont,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100dvh;
+    /* Prevent iOS overscroll bounce revealing bg behind content */
+    overscroll-behavior-y: none;
+    -webkit-overflow-scrolling: touch;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D4CFC9; border-radius: 2px; }
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #d4cfc9;
+    border-radius: 2px;
+}
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
-.fade-up { animation: fadeUp 0.3s ease forwards; }
+.fade-up {
+    animation: fadeUp 0.2s ease forwards;
+}
 
 @keyframes slideIn {
-  from { opacity: 0; transform: scale(0.97) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+    from {
+        opacity: 0;
+        transform: translate3d(0, 6px, 0);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
 }
-.slide-in { animation: slideIn 0.2s ease forwards; }
+.slide-in {
+    animation: slideIn 0.18s ease forwards;
+    will-change: opacity, transform;
+    backface-visibility: hidden;
+}
 
 @keyframes dropIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-/* Responsive */
+.mobile-nav {
+    display: none;
+}
+
 @media (max-width: 640px) {
-  .desktop-only { display: none !important; }
-  .mobile-tabs { display: flex !important; }
-  .main-content { padding: 16px 16px 80px !important; }
-  .stat-grid { grid-template-columns: 1fr !important; }
-  .chart-grid { grid-template-columns: 1fr !important; }
-  .header-pad { padding: 0 16px !important; }
-  .fc-grid { grid-template-columns: 1fr !important; }
-  .modal-grid { grid-template-columns: 1fr !important; }
+    .desktop-tabs {
+        display: none !important;
+    }
+    .desktop-only {
+        display: none !important;
+    }
+    /* Content bottom padding = nav 56px + home indicator */
+    .main-content {
+        padding: 16px 16px calc(56px + env(safe-area-inset-bottom, 20px)) !important;
+    }
+    .stat-grid {
+        display: none !important;
+    }
+    .stat-grid-mobile {
+        display: block !important;
+    }
+    .chart-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .header-pad {
+        padding-left: max(16px, env(safe-area-inset-left, 16px)) !important;
+        padding-right: max(16px, env(safe-area-inset-right, 16px)) !important;
+    }
+    .fc-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .modal-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .mobile-nav {
+        display: flex !important;
+        flex-direction: column;
+    }
+    .mobile-nav button,
+    .mobile-nav span {
+        font-family:
+            "Cabinet Grotesk",
+            -apple-system,
+            BlinkMacSystemFont,
+            sans-serif !important;
+    }
+}
+
+.stat-grid-mobile {
+    display: none;
 }
 
 @media (min-width: 641px) {
-  .mobile-tabs { display: none !important; }
-  .stat-grid { grid-template-columns: 1fr 1fr 1fr; }
-  .modal-grid { grid-template-columns: 1fr 1fr; }
+    .stat-grid {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .modal-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
