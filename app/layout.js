@@ -1,5 +1,6 @@
 import "./globals.css";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { ToastContainer } from "@/components/ui/GoeyToast";
 
 export const metadata = {
     title: "Fincast",
@@ -29,7 +30,6 @@ export default function RootLayout({ children }) {
                     name="apple-mobile-web-app-status-bar-style"
                     content="black-translucent"
                 />
-                {/* Inline script: set bg color BEFORE React hydrates to prevent white flash */}
                 <script
                     dangerouslySetInnerHTML={{
                         __html: `
@@ -41,8 +41,6 @@ export default function RootLayout({ children }) {
               document.documentElement.style.background = bg;
               document.documentElement.style.backgroundColor = bg;
               document.body && (document.body.style.background = bg);
-              document.body && (document.body.style.backgroundColor = bg);
-              // Add class so CSS can react immediately before React mounts
               if (isDark) document.documentElement.classList.add('dark-theme');
             } catch(e) {}
           })();
@@ -51,7 +49,10 @@ export default function RootLayout({ children }) {
                 />
             </head>
             <body suppressHydrationWarning>
-                <ThemeProvider>{children}</ThemeProvider>
+                <ThemeProvider>
+                    {children}
+                    <ToastContainer />
+                </ThemeProvider>
             </body>
         </html>
     );
