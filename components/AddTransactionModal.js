@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import { CATEGORIES } from "@/lib/theme";
 import { formatAmountDisplay, parseAmount } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { toast } from "./ui/GoeyToast";
 
 export default function AddTransactionModal({ onClose, onSaved }) {
     const { T } = useTheme();
+    const [categories, setCategories] = useState(CATEGORIES); // fallback to defaults
     const [form, setForm] = useState({
         type: "expense",
         description: "",
@@ -18,6 +19,25 @@ export default function AddTransactionModal({ onClose, onSaved }) {
     const [amountDisplay, setAmountDisplay] = useState("");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
+
+    // Fetch user's custom categories on open
+    useEffect(() => {
+        fetch("/api/categories")
+            .then((r) => r.json())
+            .then((data) => {
+                // API returns string[] directly (not objects with .name)
+                if (Array.isArray(data) && data.length > 0) {
+                    setCategories(data);
+                    setForm((prev) => ({
+                        ...prev,
+                        category: data.includes(prev.category)
+                            ? prev.category
+                            : data[0],
+                    }));
+                }
+            })
+            .catch(() => {}); // keep defaults on error
+    }, []);
 
     const inp = {
         background: T.surfaceAlt,
@@ -56,8 +76,8 @@ export default function AddTransactionModal({ onClose, onSaved }) {
         const saved = await res.json();
         toast(
             form.type === "income"
-                ? `Pemasukan ditambahkan 🎉`
-                : `Pengeluaran dicatat ✓`,
+                ? "Pemasukan ditambahkan 🎉"
+                : "Pengeluaran dicatat ✓",
         );
         onSaved?.(saved);
         onClose();
@@ -91,6 +111,9 @@ export default function AddTransactionModal({ onClose, onSaved }) {
                     width: "100%",
                     maxWidth: 460,
                     boxShadow: T.shadowMd,
+                    maxHeight: "90vh",
+                    overflowY: "auto",
+                    WebkitOverflowScrolling: "touch",
                 }}
             >
                 <div
@@ -271,49 +294,43 @@ export default function AddTransactionModal({ onClose, onSaved }) {
                         </div>
                     </div>
 
-                    <div
-                        className="modal-grid"
-                        style={{ display: "grid", gap: 10 }}
-                    >
-                        <div>
-                            <label
-                                style={{
-                                    fontSize: 11,
-                                    fontWeight: 700,
-                                    color: T.textMuted,
-                                    display: "block",
-                                    marginBottom: 6,
-                                    letterSpacing: 0.5,
-                                }}
-                            >
-                                TANGGAL
-                            </label>
-                            <DatePicker
-                                value={form.date}
-                                onChange={(d) => setForm({ ...form, date: d })}
-                            />
-                        </div>
-                        <div>
-                            <label
-                                style={{
-                                    fontSize: 11,
-                                    fontWeight: 700,
-                                    color: T.textMuted,
-                                    display: "block",
-                                    marginBottom: 6,
-                                    letterSpacing: 0.5,
-                                }}
-                            >
-                                KATEGORI
-                            </label>
-                            <Select
-                                value={form.category}
-                                onChange={(v) =>
-                                    setForm({ ...form, category: v })
-                                }
-                                options={CATEGORIES}
-                            />
-                        </div>
+                    <div>
+                        <label
+                            style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: T.textMuted,
+                                display: "block",
+                                marginBottom: 6,
+                                letterSpacing: 0.5,
+                            }}
+                        >
+                            TANGGAL
+                        </label>
+                        <DatePicker
+                            value={form.date}
+                            onChange={(d) => setForm({ ...form, date: d })}
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            style={{
+                                fontSize: 11,
+                                fontWeight: 700,
+                                color: T.textMuted,
+                                display: "block",
+                                marginBottom: 6,
+                                letterSpacing: 0.5,
+                            }}
+                        >
+                            KATEGORI
+                        </label>
+                        <Select
+                            value={form.category}
+                            onChange={(v) => setForm({ ...form, category: v })}
+                            options={categories}
+                        />
                     </div>
 
                     <button

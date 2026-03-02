@@ -5,6 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 
 export function Select({ value, onChange, options, placeholder }) {
     const { T } = useTheme();
+    const safeOptions = (options ?? []).filter((o) => o != null);
     const [open, setOpen] = useState(false);
     const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
     const [mounted, setMounted] = useState(false);
@@ -18,7 +19,7 @@ export function Select({ value, onChange, options, placeholder }) {
     const updatePos = useCallback(() => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
-        const dropHeight = Math.min(options.length * 46, 280);
+        const dropHeight = Math.min(safeOptions.length * 46, 280);
         const spaceBelow = window.innerHeight - rect.bottom;
         const openUp = spaceBelow < dropHeight + 20 && rect.top > spaceBelow;
 
@@ -29,7 +30,7 @@ export function Select({ value, onChange, options, placeholder }) {
                 ? { bottom: window.innerHeight - rect.top + 5, top: undefined }
                 : { top: rect.bottom + 5, bottom: undefined }),
         });
-    }, [options.length]);
+    }, [safeOptions.length]);
 
     const handleOpen = () => {
         if (!open) updatePos();
@@ -66,10 +67,13 @@ export function Select({ value, onChange, options, placeholder }) {
         };
     }, [open, updatePos]);
 
-    const selected = options.find((o) => (o.value ?? o) === value);
-    const label = selected
-        ? (selected.label ?? selected)
-        : (placeholder ?? "Pilih...");
+    const selected = safeOptions.find(
+        (o) => o != null && (o.value ?? o) === value,
+    );
+    const label =
+        selected != null
+            ? (selected.label ?? selected)
+            : (placeholder ?? "Pilih...");
 
     const dropdown = (
         <div
@@ -91,7 +95,7 @@ export function Select({ value, onChange, options, placeholder }) {
                 animation: "dropIn 0.15s ease",
             }}
         >
-            {options.map((opt) => {
+            {safeOptions.map((opt) => {
                 const val = opt.value ?? opt;
                 const lbl = opt.label ?? opt;
                 const isSel = val === value;
