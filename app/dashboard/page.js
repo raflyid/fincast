@@ -22,7 +22,6 @@ import { fmt, fmtShort, fmtDate, buildDailyData } from "@/lib/utils";
 // FitText: dynamically shrinks font to fit container
 function FitText({ value, color, large }) {
     const len = value ? value.replace(/[^0-9]/g, "").length : 0;
-    // Scale font based on digit count
     let fs;
     if (large) {
         if (len <= 8) fs = 28;
@@ -167,6 +166,7 @@ function PieTooltip({ active, payload, T }) {
 export default function DashboardPage() {
     const { T, mounted } = useTheme();
     const now = new Date();
+
     const [month, setMonth] = useState(now.getMonth() + 1);
     const [year, setYear] = useState(now.getFullYear());
     const [transactions, setTransactions] = useState([]);
@@ -191,9 +191,11 @@ export default function DashboardPage() {
     const income = transactions
         .filter((t) => t.type === "income")
         .reduce((a, t) => a + Number(t.amount), 0);
+
     const expense = transactions
         .filter((t) => t.type === "expense")
         .reduce((a, t) => a + Number(t.amount), 0);
+
     const balance = income - expense;
 
     const catExpenses = {};
@@ -204,13 +206,14 @@ export default function DashboardPage() {
     });
 
     const dailyData = buildDailyData(transactions);
-    // For category bar: include actual fill color per bar so tooltip matches
+
     const catBarData = CATEGORIES.map((cat) => ({
         name: cat,
         value: catExpenses[cat],
         budget: budget[cat] || 0,
         fill: CAT_COLORS[cat],
     }));
+
     const pieData = CATEGORIES.filter((cat) => catExpenses[cat] > 0).map(
         (cat) => ({
             name: cat,
@@ -226,6 +229,14 @@ export default function DashboardPage() {
         padding: "18px 16px",
     };
 
+    // ✅ Budget “track” color (auto ikut theme, tetap abu-abu elegan)
+    const BUDGET_TRACK = "#B0B0B0"; // kamu bisa ganti ke "#B0B0B0" kalau mau fixed
+    const TRACK_OPACITY = 0.55;
+
+    // ✅ ukuran bar supaya track jadi background, terpakai jadi foreground
+    const TRACK_SIZE = 22;
+    const VALUE_SIZE = 14;
+
     return (
         <AppShell onAddClick={() => setShowAdd(true)}>
             <div className="fade-up">
@@ -238,8 +249,7 @@ export default function DashboardPage() {
                     }}
                 />
 
-                {/* Stat cards — desktop: 3 columns, mobile: saldo full-width top, income+expense below */}
-                {/* Desktop layout (handled by stat-grid CSS class) */}
+                {/* Desktop stat cards */}
                 <div
                     className="stat-grid stat-grid-desktop"
                     style={{ display: "grid", gap: 10, marginBottom: 14 }}
@@ -269,7 +279,8 @@ export default function DashboardPage() {
                         </div>
                     ))}
                 </div>
-                {/* Mobile layout: saldo full top, pemasukan+pengeluaran 2-col below */}
+
+                {/* Mobile stat layout */}
                 <div
                     className="stat-grid-mobile"
                     style={{ gap: 10, marginBottom: 14 }}
@@ -288,6 +299,7 @@ export default function DashboardPage() {
                         </div>
                         <FitText value={fmt(balance)} color={T.accent} large />
                     </div>
+
                     <div
                         style={{
                             display: "grid",
@@ -346,6 +358,7 @@ export default function DashboardPage() {
                     >
                         Pemasukan & pengeluaran per hari
                     </div>
+
                     {dailyData.length === 0 ? (
                         <div
                             style={{
@@ -431,6 +444,7 @@ export default function DashboardPage() {
                             </BarChart>
                         </ResponsiveContainer>
                     )}
+
                     <div style={{ display: "flex", gap: 16, marginTop: 10 }}>
                         {[
                             { label: "Pemasukan", color: T.green },
@@ -470,7 +484,7 @@ export default function DashboardPage() {
                         marginBottom: 14,
                     }}
                 >
-                    {/* Pengeluaran vs Budget */}
+                    {/* ✅ Pengeluaran vs Budget (Budget jadi background track) */}
                     <div style={card}>
                         <div
                             style={{
@@ -482,6 +496,7 @@ export default function DashboardPage() {
                         >
                             Pengeluaran vs Budget
                         </div>
+
                         <ResponsiveContainer width="100%" height={210}>
                             <BarChart
                                 data={catBarData}
@@ -491,7 +506,9 @@ export default function DashboardPage() {
                                     left: 0,
                                     bottom: 30,
                                 }}
-                                barGap={3}
+                                // 🔥 ini bikin bar-budget dan bar-terpakai overlay (track + foreground)
+                                barGap={-18}
+                                barCategoryGap="35%"
                             >
                                 <CartesianGrid
                                     strokeDasharray="3 3"
@@ -525,12 +542,28 @@ export default function DashboardPage() {
                                     tickFormatter={fmtShort}
                                     width={52}
                                 />
-                                {/* Custom tooltip that uses the bar's own fill color */}
+
                                 <Tooltip
                                     cursor={{ fill: T.surfaceAlt, radius: 4 }}
                                     content={({ active, payload, label }) => {
                                         if (!active || !payload?.length)
                                             return null;
+
+                                        // urut: Terpakai dulu, Budget kedua
+                                        const ordered = [...payload].sort(
+                                            (a, b) => {
+                                                const aRank =
+                                                    a.dataKey === "value"
+                                                        ? 0
+                                                        : 1;
+                                                const bRank =
+                                                    b.dataKey === "value"
+                                                        ? 0
+                                                        : 1;
+                                                return aRank - bRank;
+                                            },
+                                        );
+
                                         return (
                                             <div
                                                 style={{
@@ -554,17 +587,24 @@ export default function DashboardPage() {
                                                 >
                                                     {label}
                                                 </div>
-                                                {payload.map((p, i) => {
-                                                    // p.dataKey is reliable: 'value' = Terpakai, 'budget' = Budget
+
+                                                {ordered.map((p, i) => {
                                                     const isBudget =
                                                         p.dataKey === "budget";
-                                                    // BUDGET_COLOR must match the bar fill exactly
-                                                    const BUDGET_COLOR =
-                                                        "#B0B0B0";
+
+                                                    // Terpakai: ambil warna kategori dari data row (p.payload.fill)
+                                                    // Budget: ambil warna track yang beneran dipakai bar budget (BUDGET_TRACK)
                                                     const dotColor = isBudget
-                                                        ? BUDGET_COLOR
-                                                        : (CAT_COLORS[label] ??
+                                                        ? BUDGET_TRACK
+                                                        : (p.payload?.fill ??
+                                                          CAT_COLORS[label] ??
                                                           T.accent);
+
+                                                    const rowLabel =
+                                                        p.dataKey === "value"
+                                                            ? "Terpakai"
+                                                            : "Budget";
+
                                                     return (
                                                         <div
                                                             key={i}
@@ -576,7 +616,7 @@ export default function DashboardPage() {
                                                                 fontSize: 13,
                                                                 marginBottom:
                                                                     i <
-                                                                    payload.length -
+                                                                    ordered.length -
                                                                         1
                                                                         ? 4
                                                                         : 0,
@@ -587,8 +627,12 @@ export default function DashboardPage() {
                                                                     width: 8,
                                                                     height: 8,
                                                                     borderRadius: 2,
-                                                                    background:
+                                                                    backgroundColor:
                                                                         dotColor,
+                                                                    opacity:
+                                                                        isBudget
+                                                                            ? TRACK_OPACITY
+                                                                            : 1,
                                                                     flexShrink: 0,
                                                                 }}
                                                             />
@@ -597,7 +641,7 @@ export default function DashboardPage() {
                                                                     color: T.textSub,
                                                                 }}
                                                             >
-                                                                {p.name}:
+                                                                {rowLabel}:
                                                             </span>
                                                             <span
                                                                 style={{
@@ -616,28 +660,34 @@ export default function DashboardPage() {
                                         );
                                     }}
                                 />
+
+                                {/* ✅ TRACK: Budget dulu (lebih tebal, abu-abu, opacity rendah) */}
+                                <Bar
+                                    dataKey="budget"
+                                    name="Budget"
+                                    fill={BUDGET_TRACK}
+                                    fillOpacity={TRACK_OPACITY}
+                                    radius={[6, 6, 0, 0]}
+                                    barSize={TRACK_SIZE}
+                                    isAnimationActive={false}
+                                />
+
+                                {/* ✅ FOREGROUND: Terpakai di atas track (lebih kecil, warna kategori) */}
                                 <Bar
                                     dataKey="value"
                                     name="Terpakai"
-                                    radius={[3, 3, 0, 0]}
-                                    maxBarSize={22}
+                                    radius={[6, 6, 0, 0]}
+                                    barSize={VALUE_SIZE}
+                                    isAnimationActive={false}
                                 >
                                     {catBarData.map((d, i) => (
                                         <Cell
                                             key={i}
                                             fill={CAT_COLORS[d.name]}
-                                            fillOpacity={0.9}
+                                            fillOpacity={0.92}
                                         />
                                     ))}
                                 </Bar>
-                                <Bar
-                                    dataKey="budget"
-                                    name="Budget"
-                                    radius={[3, 3, 0, 0]}
-                                    fill="#B0B0B0"
-                                    fillOpacity={1}
-                                    maxBarSize={22}
-                                />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -667,7 +717,6 @@ export default function DashboardPage() {
                             </div>
                         ) : (
                             <>
-                                {/* Use fixed height for pie so it doesn't get too small on mobile */}
                                 <ResponsiveContainer width="100%" height={160}>
                                     <PieChart>
                                         <Pie
@@ -694,6 +743,7 @@ export default function DashboardPage() {
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
+
                                 <div
                                     style={{
                                         display: "flex",
@@ -785,6 +835,7 @@ export default function DashboardPage() {
                                 >
                                     {t.type === "income" ? "↑" : "↓"}
                                 </div>
+
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div
                                         style={{
@@ -808,6 +859,7 @@ export default function DashboardPage() {
                                         {fmtDate(t.date)} · {t.category}
                                     </div>
                                 </div>
+
                                 <div
                                     style={{
                                         flexShrink: 0,
